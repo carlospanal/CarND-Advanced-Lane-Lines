@@ -1,19 +1,9 @@
-## Advanced Lane Finding
-[![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
-![Lanes Image](./examples/example_output.jpg)
+# **Finding Lane Lines on the Road** 
 
-In this project, your goal is to write a software pipeline to identify the lane boundaries in a video, but the main output or product we want you to create is a detailed writeup of the project.  Check out the [writeup template](https://github.com/udacity/CarND-Advanced-Lane-Lines/blob/master/writeup_template.md) for this project and use it as a starting point for creating your own writeup.  
 
-Creating a great writeup:
 ---
-A great writeup should include the rubric points as well as your description of how you addressed each point.  You should include a detailed description of the code used in each step (with line-number references and code snippets where necessary), and links to other supporting documents or external references.  You should include images in your writeup to demonstrate how your code works with examples.  
 
-All that said, please be concise!  We're not looking for you to write a book here, just a brief description of how you passed each rubric point, and references to the relevant code :). 
-
-You're not required to use markdown for your writeup.  If you use another method please just submit a pdf of your writeup.
-
-The Project
----
+Advanced Lane Finding Project
 
 The goals / steps of this project are the following:
 
@@ -26,14 +16,105 @@ The goals / steps of this project are the following:
 * Warp the detected lane boundaries back onto the original image.
 * Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position.
 
-The images for camera calibration are stored in the folder called `camera_cal`.  The images in `test_images` are for testing your pipeline on single frames.  If you want to extract more test images from the videos, you can simply use an image writing method like `cv2.imwrite()`, i.e., you can read the video in frame by frame as usual, and for frames you want to save for later you can write to an image file.  
 
-To help the reviewer examine your work, please save examples of the output from each stage of your pipeline in the folder called `output_images`, and include a description in your writeup for the project of what each image shows.    The video called `project_video.mp4` is the video your pipeline should work well on.  
+[image1]: ./camera_cal/calibration3.jpg "output"
+[image2]: ./camera_cal_output/out_calibration3.jpg "output"
+[image3]: ./test_images/straight_lines1.jpg "output"
+[image4]: ./test_calibrated_output/out_undis_straight_lines1.jpg "output"
+[image5]: ./test_images/test3.jpg "output"
+[image6]: ./test_binary_output/out_binary_test3.jpg "output"
 
-The `challenge_video.mp4` video is an extra (and optional) challenge for you if you want to test your pipeline under somewhat trickier conditions.  The `harder_challenge.mp4` video is another optional challenge and is brutal!
+---
 
-If you're feeling ambitious (again, totally optional though), don't stop there!  We encourage you to go out and take video of your own, calibrate your camera and show us how you would implement this project from scratch!
+### Reflection
 
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
+### 1. Calibration
 
+I used a set of chessboard images in order to get the calibration parameters of the used camera.
+Defined function: find_image_distortion()  
+Main functions used inside find_image_distortion():  
+    * cv2.findChessboardCorners()
+    * cv2.calibrateCamera()
+    
+Effect on chessboard image after applying cv2.undistort():
+
+![alt text][image1]  ![alt text][image2]  
+
+Effect on training image after applying cv2.undistort():
+
+![alt text][image3]  ![alt text][image4]  
+
+
+### 2. Binary image
+
+This pipeline uses an undistorted image as an input and changes its color space from RGB to HLS and Lab spaces.  
+
+L channel of HLS space is used to detect white lanes, while b channel of Lab space is used to detect yellow lanes.
+
+
+I created 2 pipelines. 
+They work the same way, but the first one takes a list of images as an input instead of a single image and,
+unlike the definitive pipeline, its region of interest is specifically designed for the size of training images.  
+  
+The first one was used for training images and includes a widget that lets you control the hough function parameters 
+and also lets you move through the list of images.  
+  
+Initial values for parameters of this widget are the same as the ones chosen for both pipelines, and its use
+doesn't affect the stored output of the involved training images.  
+
+The definitive pipeline takes an image as an input and consists on the following steps:  
+
+  1 - Convert intial RGB image to grayscale using grayscale()  
+
+  2 - Apply smoothing to the image using gaussian_blur()  
+
+  3 - Use Canny algorithm on the image to detect edges using canny()  
+
+  4 - Define a region of interest, depending on the image size and using  np.array()  
+
+  5 - Apply defined region to the output of canny() function using region_of_interest()  
+
+  6 - Calculate Hough Lines using hough_lines()  
+  
+After creating this definitive pipeline, i started modifying draw_lines() so that function
+was able to draw 1 averaged line for each lane instead of all the detected hough lines.
+Basic steps of this strategy:  
+
+  1 - Group lines as left or right lines depending on their slope  
+  2 - Use polyfit() and poly1d() to fit a line through each group of points  
+  3 - Set starting and end points of each averaged lane considering the fitted line and image dimensions  
+  
+Regarding the extra challenge, I partially completed it by making these modifications:  
+
+  1 - Define region of interest based on image dimensions instead of "hardcoding" it  
+  2 - Define 2 global variables that store last averaged lines so the program doesn't break  
+      when there is frame with no detected lines in some of the lanes  
+  3 - Set a minimal slope so horizontal lines are discarded  
+  
+ The video of this challenge is still unstable from 0:04 to 0:05.  
+ I tried some strategies like lowering the canny low and high threshold, but it had a negative effect on the previous videos.  
+
+## Outputs:
+Output of the pipeline when applied to a training image:  
+![alt text][image1]  
+
+[link to folder containing videos on their final state](test_videos_output)  
+
+[link to folder containing videos of different steps of the process](other_outputs)  
+
+
+### 2. Identify potential shortcomings with your current pipeline
+
+
+Changes on light instensity or road colors can break this pipeline, as happens with the last challenge video.   
+  
+Another problem is that this process is not considering the fact that there could be a much closer car on the same lane.  
+In addition, the system is not robust against cracks on the road or in the car front glass.  
+
+
+### 3. Suggest possible improvements to your pipeline
+
+Averaged lines have some kind of vibration due to the movement of the car, a PID could be easly implemented to correct that.  
+  
+Another potential improvement, but a bit more complicated one, could be to divide the image in order to apply canny algorithm
+with different values to different parts of the image depending on local changes on road colors.  
