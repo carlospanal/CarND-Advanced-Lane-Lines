@@ -23,6 +23,8 @@ The goals / steps of this project are the following:
 [image4]: ./test_calibrated_output/out_undis_straight_lines1.jpg "output"
 [image5]: ./test_images/test3.jpg "output"
 [image6]: ./test_binary_output/out_binary_test3.jpg "output"
+[image7]: ./test_binary_output/out_binary_test3.jpg "output"
+[image8]: ./test_perspective_output/out_perspective_test3.jpg "output"
 
 ---
 
@@ -51,6 +53,27 @@ This pipeline uses an undistorted image as an input and changes its color space 
 
 L channel of HLS space is used to detect white lanes, while b channel of Lab space is used to detect yellow lanes.
 
+Defined function: binary_pipeline()
+Main functions used inside find_image_distortion():  
+    * cv2.cvtColor()
+    
+Effect on training image after applying binary threshold:
+    
+![alt text][image5]  ![alt text][image6]  
+
+### 3. Perspective change
+
+In order to get a view of the real dimensions of the lanes, we have to apply a perspective change.  
+I defined get_transform_matrix(). This function takes a list of images with straight lanes and uses canny algorithm and hough transform to detect them. I found interesting to do it this way instead of "hardcoding" origin and destination points.
+Then, the mean value of start/end point of the lanes is calculated and used with cv2.getPerspectiveTransform() to get a perspective transformation matrix M, as well as the inverse transformation matrix Minv.
+
+Then, cv2.warpPerspective() uses M and a binary image in order to create a binary top-down view.
+Example:
+
+![alt text][image7]  ![alt text][image8]  
+
+    
+    
 
 I created 2 pipelines. 
 They work the same way, but the first one takes a list of images as an input instead of a single image and,
