@@ -88,7 +88,7 @@ First, I defined hist() to generate an histogram of the binary warped image
 Then, peaks of the histogram are used to set an starting point for the sliding window method.  
 I defined find_lanes() for this method:  
 It defines a set of "windows" with a certain margin. The first window detects lane points that are close to it.  
-Next windows change their X positino based on the position of pixels of the previous window. In addition, I added a new functionality that stores the last x-position change of last windows in order to keep that change even when a new window doesn't find any pixel.  
+Next windows change their X position based on the position of pixels of the previous window. In addition, I added a new functionality that stores the last x-position change of last windows in order to keep that change even when a new window doesn't find any pixel.  
 
 I also defined fit_polynomial() that takes a set of pixels and fits a second order polynomial to it:  
 ![alt text][image11]
@@ -105,77 +105,49 @@ Position of the car is considered to be at the center of the image. Center of th
 I defined measure_curvature_real() in order to calculate curvature of left and right lines. This calculation is based on A and B parameters of the fitted polynomial lines.
 
 Both functions use real world data in order to translate values from pixels to meters.  
-Example:
+
+(Result is shown in the image of the next section)
+
+### 6. Inversed perspective change
+
+inv_transform() was defined in order to translate the fitted polynomials to original images.
+It draws color between both polynomials and uses cv2.warpPerspective and cv2.addWeighted to unwarp the result and combine it with the image.
+
 
 ![alt text][image13]
 
+### VIDEO PIPELINE
 
+process_image() has been defined in order to process the video.
+It follows the same order as previous explained sections, and uses some global variables in order to store values between frames.
+"counter" variable is used to check if the first frame is being processed, so the sliding window method is applyed only in that case.
 
-
-
-I created 2 pipelines. 
-They work the same way, but the first one takes a list of images as an input instead of a single image and,
-unlike the definitive pipeline, its region of interest is specifically designed for the size of training images.  
+The pipeline asumes that the following parameters have already been calculated and are previously existing:  
+mtx, dist, M, Minv  
+The reason for this is that these are early calculations of the project that slow down the development of the rest of the pipeline.
   
-The first one was used for training images and includes a widget that lets you control the hough function parameters 
-and also lets you move through the list of images.  
-  
-Initial values for parameters of this widget are the same as the ones chosen for both pipelines, and its use
-doesn't affect the stored output of the involved training images.  
-
-The definitive pipeline takes an image as an input and consists on the following steps:  
-
-  1 - Convert intial RGB image to grayscale using grayscale()  
-
-  2 - Apply smoothing to the image using gaussian_blur()  
-
-  3 - Use Canny algorithm on the image to detect edges using canny()  
-
-  4 - Define a region of interest, depending on the image size and using  np.array()  
-
-  5 - Apply defined region to the output of canny() function using region_of_interest()  
-
-  6 - Calculate Hough Lines using hough_lines()  
-  
-After creating this definitive pipeline, i started modifying draw_lines() so that function
-was able to draw 1 averaged line for each lane instead of all the detected hough lines.
-Basic steps of this strategy:  
-
-  1 - Group lines as left or right lines depending on their slope  
-  2 - Use polyfit() and poly1d() to fit a line through each group of points  
-  3 - Set starting and end points of each averaged lane considering the fitted line and image dimensions  
-  
-Regarding the extra challenge, I partially completed it by making these modifications:  
-
-  1 - Define region of interest based on image dimensions instead of "hardcoding" it  
-  2 - Define 2 global variables that store last averaged lines so the program doesn't break  
-      when there is frame with no detected lines in some of the lanes  
-  3 - Set a minimal slope so horizontal lines are discarded  
-  
- The video of this challenge is still unstable from 0:04 to 0:05.  
- I tried some strategies like lowering the canny low and high threshold, but it had a negative effect on the previous videos.  
 
 ## Outputs:
-Output of the pipeline when applied to a training image:  
-![alt text][image1]  
 
-[link to folder containing videos on their final state](test_videos_output)  
-
-[link to folder containing videos of different steps of the process](other_outputs)  
+[link to folder containing video on its final state](videos_output)  
 
 
-### 2. Identify potential shortcomings with your current pipeline
+## Discussion:
 
+### Potential shortcomings
 
-Changes on light instensity or road colors can break this pipeline, as happens with the last challenge video.   
   
-Another problem is that this process is not considering the fact that there could be a much closer car on the same lane.  
-In addition, the system is not robust against cracks on the road or in the car front glass.  
+* This process is not considering the fact that there could be a much closer car on the same lane.  
+* Lane changing is also not considered on this model.  
+* Different line colors would break the pipeline.  
 
 
-### 3. Suggest possible improvements to your pipeline
+### Possible improvements
 
-Averaged lines have some kind of vibration due to the movement of the car, a PID could be easly implemented to correct that.  
-  
-Another potential improvement, but a bit more complicated one, could be to divide the image in order to apply canny algorithm
-with different values to different parts of the image depending on local changes on road colors.  
+* Apply smoothing by averaging previous frame parameters. 
+* Use deep learing techniques to detect lines.
+* Use some method to reject inconsistent frame
+
+
+
+
