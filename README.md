@@ -20,11 +20,14 @@ The goals / steps of this project are the following:
 [image1]: ./camera_cal/calibration3.jpg "output"
 [image2]: ./camera_cal_output/out_calibration3.jpg "output"
 [image3]: ./test_images/straight_lines1.jpg "output"
-[image4]: ./test_calibrated_output/out_undis_straight_lines1.jpg "output"
+[image4]: ./output_images/test_calibrated_output/out_undis_straight_lines1.jpg "output"
 [image5]: ./test_images/test3.jpg "output"
-[image6]: ./test_binary_output/out_binary_test3.jpg "output"
-[image7]: ./test_binary_output/out_binary_test3.jpg "output"
-[image8]: ./test_perspective_output/out_perspective_test3.jpg "output"
+[image6]: ./output_images/test_binary_output/out_binary_test3.jpg "output"
+[image7]: ./output_images/test_binary_output/out_binary_test3.jpg "output"
+[image8]: ./output_images/test_perspective_output/out_perspective_test3.jpg "output"
+[image9]: ./output_images/test_windows_output/3_gray.jpg "output"
+[image10]: ./output_images/test_windows_output/3_window.jpg "output"
+[image11]: ./output_images/test_windows_output/3_histogram.jpg "output"
 
 ---
 
@@ -35,7 +38,7 @@ The goals / steps of this project are the following:
 I used a set of chessboard images in order to get the calibration parameters of the used camera.
 Defined function: find_image_distortion()  
 Main functions used inside find_image_distortion():  
-    * cv2.findChessboardCorners()
+    * cv2.findChessboardCorners()  
     * cv2.calibrateCamera()
     
 Effect on chessboard image after applying cv2.undistort():
@@ -73,8 +76,7 @@ Example:
 ![alt text][image7]  ![alt text][image8]  
 
     
-    
-
+### 3. Perspective change
 I created 2 pipelines. 
 They work the same way, but the first one takes a list of images as an input instead of a single image and,
 unlike the definitive pipeline, its region of interest is specifically designed for the size of training images.  
